@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { GetFilteredTodosDto } from './dto/get-filtered-todos.dto';
+import { UpdateTodoStatusDto } from './dto/update-todo-status.dto';
 import { Todo, TodoStatus } from './todo.model';
 import { TodosService } from './todos.service';
 
@@ -18,14 +19,10 @@ export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get()
-  getTodos(@Query() filtersDto: GetFilteredTodosDto) {
-    console.log('filtersDto', filtersDto);
-
-    if (Object.keys(filtersDto).length > 0) {
-      console.log('mtav');
-      return this.todosService.getFilteredTodos(filtersDto);
+  getTodos(@Query() getFilteredTodosDto: GetFilteredTodosDto) {
+    if (Object.keys(getFilteredTodosDto).length > 0) {
+      return this.todosService.getFilteredTodos(getFilteredTodosDto);
     }
-    console.log('asd');
     return this.todosService.getAllTodos();
   }
 
@@ -41,7 +38,11 @@ export class TodosController {
   }
 
   @Patch(':id/status')
-  updateTodoStatus(@Param('id') id: string, @Body('status') status) {
+  updateTodoStatus(
+    @Param('id') id: string,
+    @Body() updateTodoStatusDto: UpdateTodoStatusDto,
+  ) {
+    const { status } = updateTodoStatusDto;
     return this.todosService.updateTodoStatus(id, status);
   }
 

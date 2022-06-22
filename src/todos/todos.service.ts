@@ -13,8 +13,8 @@ export class TodosService {
     return this.todos;
   }
 
-  getFilteredTodos(filtersDto: GetFilteredTodosDto) {
-    const { status, search } = filtersDto;
+  getFilteredTodos(getFilteredTodosDto: GetFilteredTodosDto) {
+    const { status, search } = getFilteredTodosDto;
 
     let todos = this.getAllTodos();
 
@@ -34,9 +34,13 @@ export class TodosService {
   }
 
   getTodoById(id: string) {
-    const [todo] = this.getTodo(id);
+    const found = this.todos.find((todo) => todo.id === id);
 
-    return todo;
+    if (!found) {
+      throw new NotFoundException(`Todo with ID #${id} does not exist`);
+    }
+
+    return found;
   }
 
   createTodo(createTodoDto: CreateTodoDto) {
@@ -55,25 +59,16 @@ export class TodosService {
   }
 
   deleteTodo(id: string) {
-    const [todo, idx] = this.getTodo(id);
+    const found = this.getTodoById(id);
 
-    this.todos.splice(idx, 1);
+    this.todos = this.todos.filter((todo) => todo.id !== found.id);
   }
 
   updateTodoStatus(id: string, status: TodoStatus) {
-    const [todo, idx] = this.getTodo(id);
+    const found = this.getTodoById(id);
 
-    todo.status = status;
-  }
+    found.status = status;
 
-  private getTodo(id: string): [Todo, number] {
-    const idx = this.todos.findIndex((todo) => todo.id === id);
-    const found = this.todos[idx];
-
-    if (found) {
-      return [found, idx];
-    }
-
-    throw new NotFoundException();
+    return found;
   }
 }
