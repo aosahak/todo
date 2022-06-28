@@ -15,29 +15,29 @@ export class TodosService {
     private todosRepository: Repository<Todo>,
   ) {}
 
-  // getAllTodos() {
-  //   return this.todos;
-  // }
+  async getAllTodos() {
+    return await this.todosRepository.find();
+  }
 
-  // getFilteredTodos(getFilteredTodosDto: GetFilteredTodosDto) {
-  //   const { status, search } = getFilteredTodosDto;
+  async getFilteredTodos(getFilteredTodosDto: GetFilteredTodosDto) {
+    const { status, search } = getFilteredTodosDto;
 
-  //   let todos = this.getAllTodos();
+    let todos = await this.getAllTodos();
 
-  //   if (status) {
-  //     todos = todos.filter((todo) => todo.status === status);
-  //   }
+    if (status) {
+      todos = todos.filter((todo) => todo.status === status);
+    }
 
-  //   if (search) {
-  //     todos = todos.filter(
-  //       (todo) =>
-  //         todo.title.toLowerCase().includes(search.toLowerCase()) ||
-  //         todo.description.toLowerCase().includes(search.toLowerCase()),
-  //     );
-  //   }
+    if (search) {
+      todos = todos.filter(
+        (todo) =>
+          todo.title.toLowerCase().includes(search.toLowerCase()) ||
+          todo.description.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
 
-  //   return todos;
-  // }
+    return todos;
+  }
 
   async getTodoById(id: string) {
     const found = await this.todosRepository.findOneBy({ id });
@@ -49,32 +49,33 @@ export class TodosService {
     return found;
   }
 
-  // createTodo(createTodoDto: CreateTodoDto) {
-  //   const { title, description } = createTodoDto;
+  async createTodo(createTodoDto: CreateTodoDto) {
+    const { title, description } = createTodoDto;
 
-  //   const todo: TodoModel = {
-  //     id: uuid(),
-  //     title,
-  //     description,
-  //     status: TodoStatus.OPEN,
-  //   };
+    const todo: Todo = this.todosRepository.create({
+      title,
+      description,
+      status: TodoStatus.OPEN,
+    });
 
-  //   this.todos.push(todo);
+    await this.todosRepository.save(todo);
 
-  //   return todo;
-  // }
+    return todo;
+  }
 
-  // deleteTodo(id: string) {
-  //   const found = this.getTodoById(id);
+  async deleteTodo(id: string) {
+    const found = await this.getTodoById(id);
 
-  //   this.todos = this.todos.filter((todo) => todo.id !== found.id);
-  // }
+    await this.todosRepository.delete(found);
+  }
 
-  // updateTodoStatus(id: string, status: TodoStatus) {
-  //   const found = this.getTodoById(id);
+  async updateTodoStatus(id: string, status: TodoStatus) {
+    const found = await this.getTodoById(id);
 
-  //   found.status = status;
+    found.status = status;
 
-  //   return found;
-  // }
+    this.todosRepository.save(found);
+
+    return found;
+  }
 }
