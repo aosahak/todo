@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional } from 'class-validator';
-import { TodoStatus } from '../todo.model';
+import { TodoStatus } from '../todo-status.enum';
 
 export class GetFilteredTodosDto {
   @IsOptional()
