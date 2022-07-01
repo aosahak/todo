@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TodoStatus } from './todo-status.enum';
 
-import { v4 as uuid } from 'uuid';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { GetFilteredTodosDto } from './dto/get-filtered-todos.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,19 +21,24 @@ export class TodosService {
   async getFilteredTodos(getFilteredTodosDto: GetFilteredTodosDto) {
     const { status, search } = getFilteredTodosDto;
 
-    let todos = await this.getAllTodos();
+    const query = await this.todosRepository.createQueryBuilder('todo');
 
     if (status) {
-      todos = todos.filter((todo) => todo.status === status);
+      query.andWhere('todo.status = :status', {
+        status,
+      });
     }
 
     if (search) {
-      todos = todos.filter(
-        (todo) =>
-          todo.title.toLowerCase().includes(search.toLowerCase()) ||
-          todo.description.toLowerCase().includes(search.toLowerCase()),
+      query.andWhere(
+        `LOWER(todo.title) LIKE LOWER(:search) OR LOWER(todo.description) LIKE LOWER(:search)`,
+        {
+          search: `%${search}%`,
+        },
       );
     }
+
+    const todos = query.getMany();
 
     return todos;
   }
@@ -64,9 +68,11 @@ export class TodosService {
   }
 
   async deleteTodo(id: string) {
-    const found = await this.getTodoById(id);
+    const res = await this.todosRepository.delete({ id });
 
-    await this.todosRepository.delete(found);
+    if (res.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} does not exist`);
+    }
   }
 
   async updateTodoStatus(id: string, status: TodoStatus) {

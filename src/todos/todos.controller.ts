@@ -48,6 +48,6 @@ export class TodosController {
   @Delete(':id')
   deleteById(@Param() params) {
     const { id } = params;
-    return this.todosService.deleteTodo(id);
+    this.todosService.deleteTodo(id);
   }
 }
